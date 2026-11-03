@@ -1,6 +1,6 @@
-# MPB business valuation calculator — prototype
+# XXX business valuation calculator — prototype
 
-Interactive prototype of the slider-based "What is your agency worth?" calculator for the My Property Box exec team to try. Static HTML, no build step, nothing is stored or sent.
+Interactive prototype of the slider-based "What is your agency worth?" calculator for the XXX exec team to try. Static HTML, no build step, nothing is stored or sent.
 
 **Status:** prototype for review, published 3 November 2026. Intended to be public for about 48 hours; make the repository private or delete it after the review.
 
@@ -12,7 +12,7 @@ Interactive prototype of the slider-based "What is your agency worth?" calculato
 
 ## Assumptions to confirm
 
-The multiples, stream weights and band edges in `config.js` are placeholders chosen to behave sensibly. They are **not** taken from MPB's acquisition models and must be set by the acquisitions team before anything customer-facing is built.
+The multiples, stream weights and band edges in `config.js` are placeholders chosen to behave sensibly. They are **not** taken from XXX's acquisition models and must be set by the acquisitions team before anything customer-facing is built.
 
 ## Changing the model
 
@@ -40,4 +40,4 @@ Stream weights: management 1.00, ancillary 0.80, lettings 0.70, sales 0.50, othe
 
 ## Brand
 
-Navy `#193153` and teal `#91D1B9` from the 2024 brand guidelines; greys and button style from mypropertybox.co.uk; Roboto with Satisfy for the script accent (both open-licence Google Fonts). Logos are the official RGB PNGs. Design tokens are CSS variables at the top of `index.html`.
+Navy `#193153` and teal `#91D1B9` from the brand guidelines; greys and button style from the main website; Roboto with Satisfy for the script accent (both open-licence Google Fonts). A plain "XXX" wordmark stands in for the logo. Design tokens are CSS variables at the top of `index.html`.

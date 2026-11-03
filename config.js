@@ -1,9 +1,9 @@
 // ============================================================
-//  MPB business valuation calculator — MODEL PARAMETERS
+//  XXX business valuation calculator — MODEL PARAMETERS
 //  Edit this file to change the model. No other file needs touching.
 //  All money values are in pounds (no commas, no £ sign).
 // ============================================================
-window.MPB_VALUATION_CONFIG = {
+window.VALUATION_CONFIG = {
 
   // The most anyone can type into a single field.
   hardCap: 50000000,

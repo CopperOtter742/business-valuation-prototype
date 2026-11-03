@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Business valuation calculator · My Property Box (prototype)</title>
+<link rel="icon" href="assets/mpb-logo-navy-teal.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Satisfy&display=swap" rel="stylesheet">
+<style>
+/* ---------- My Property Box design tokens ----------
+   Navy and teal from the 2024 brand guidelines; greys from mypropertybox.co.uk.
+   Teal ink is a derived shade for small text/icons (4.5:1 on white), not an official colour. */
+:root {
+  --mpb-navy: #193153;
+  --mpb-teal: #91D1B9;
+  --mpb-teal-ink: #2F7A63;
+  --mpb-white: #FFFFFF;
+  --mpb-bg: #F0F0F0;
+  --mpb-surface: #FFFFFF;
+  --mpb-line: #E3E7ED;
+  --mpb-track: #D8DEE6;
+  --mpb-text: #464545;
+  --mpb-text-muted: #636262;
+  --mpb-text-on-navy: #E6ECF2;
+  --mpb-font-heading: "Roboto", Arial, Helvetica, sans-serif;
+  --mpb-font-body: "Roboto", Arial, Helvetica, sans-serif;
+  --mpb-font-script: "Satisfy", "Brush Script MT", cursive;
+  --mpb-space-1: 4px; --mpb-space-2: 8px; --mpb-space-3: 16px; --mpb-space-4: 24px; --mpb-space-5: 32px; --mpb-space-6: 48px;
+  --mpb-radius-button: 0;
+  --mpb-radius-input: 0 0 10px 0;
+  --mpb-radius-card: 0 0 24px 0;
+  --mpb-shadow-card: 0 10px 30px rgba(25, 49, 83, .10);
+  --mpb-focus: 0 0 0 3px var(--mpb-teal);
+  --mpb-ease: cubic-bezier(.2, .8, .2, 1);
+  --mpb-duration: 350ms;
+}
+@media (prefers-reduced-motion: reduce) { :root { --mpb-duration: 0ms; } }
+
+/* Metric-matched fallback so text does not reflow when Roboto arrives */
+@font-face {
+  font-family: "Roboto Fallback";
+  src: local("Arial");
+  size-adjust: 99.5%; ascent-override: 92.8%; descent-override: 24.4%; line-gap-override: 0%;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--mpb-font-body), "Roboto Fallback"; color: var(--mpb-text); background: var(--mpb-bg); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+a { color: var(--mpb-navy); }
+a:hover { color: var(--mpb-teal-ink); }
+h1, h2, h3 { font-family: var(--mpb-font-heading); margin: 0; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 var(--mpb-space-4); }
+.eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mpb-text-muted); }
+.figure { font-variant-numeric: tabular-nums; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Header */
+.site-header { background: var(--mpb-surface); border-bottom: 1px solid var(--mpb-line); }
+.site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--mpb-space-4); padding-top: 12px; padding-bottom: 12px; flex-wrap: wrap; }
+.site-header img { height: 56px; width: auto; display: block; }
+.confidential { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mpb-text-muted); }
+.header-right { display: flex; align-items: center; gap: var(--mpb-space-4); flex-wrap: wrap; }
+
+/* Hero */
+.hero { background: var(--mpb-navy); color: var(--mpb-white); }
+.hero .wrap { padding-top: 48px; padding-bottom: 64px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--mpb-space-5); align-items: end; }
+.hero-copy { grid-column: span 8; }
+.hero-points { grid-column: span 4; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--mpb-text-on-navy); }
+.hero-points div { display: flex; gap: 12px; align-items: flex-start; }
+.hero-points svg { flex: none; }
+.script { font-family: var(--mpb-font-script); font-size: 30px; color: var(--mpb-teal); line-height: 1; margin: 0 0 14px; }
+.hero h1 { font-weight: 300; font-size: clamp(30px, 4vw, 48px); line-height: 1.1; letter-spacing: .02em; text-transform: uppercase; margin-bottom: 18px; }
+.hero p.lead { font-size: 18px; font-weight: 300; max-width: 640px; color: var(--mpb-text-on-navy); margin: 0; }
+
+/* Layout */
+.calc { margin-top: -32px; padding-bottom: 64px; }
+.columns { display: flex; flex-wrap: wrap; gap: var(--mpb-space-5); align-items: flex-start; }
+.card { background: var(--mpb-surface); border-radius: var(--mpb-radius-card); box-shadow: var(--mpb-shadow-card); }
+.sliders { flex: 999 1 560px; min-width: 0; padding: 32px 36px 24px; }
+.result { flex: 1 1 360px; min-width: 0; padding: 28px 32px; position: sticky; top: 16px; }
+@media (max-width: 720px) { .sliders, .result { padding: 20px 16px; } .result { position: static; } }
+
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.section-head h2 { font-size: 20px; font-weight: 500; color: var(--mpb-navy); text-transform: uppercase; letter-spacing: .04em; }
+.section-head span { font-size: 13px; color: var(--mpb-text-muted); }
+.sliders > p { margin: 0 0 20px; font-size: 14px; color: var(--mpb-text-muted); }
+
+/* One revenue stream */
+.stream { padding: 16px 0; border-top: 1px solid #ECEFF3; }
+.stream-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.stream label { display: block; font-size: 16px; font-weight: 500; color: var(--mpb-navy); }
+.stream .hint { display: block; font-size: 13px; color: var(--mpb-text-muted); margin-top: 2px; }
+.num-wrap { position: relative; display: inline-flex; align-items: center; }
+.num-wrap .pound { position: absolute; left: 12px; font-size: 18px; font-weight: 500; color: var(--mpb-text-muted); pointer-events: none; }
+.num { font: 500 18px/1 var(--mpb-font-body); color: var(--mpb-navy); width: 160px; min-height: 48px; padding: 10px 12px 10px 28px; border: 2px solid var(--mpb-track); border-radius: var(--mpb-radius-input); background: var(--mpb-white); font-variant-numeric: tabular-nums; }
+.num:focus { outline: none; border-color: var(--mpb-navy); box-shadow: var(--mpb-focus); }
+@media (max-width: 520px) { .num-wrap, .num { width: 100%; } }
+.range-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 72px; gap: 12px; align-items: center; margin-top: 4px; }
+.range-row .end { font-size: 12px; color: var(--mpb-text-muted); }
+.range-row .end.max { text-align: right; }
+.range { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; background: transparent; margin: 0; cursor: pointer; touch-action: pan-y; }
+.range:focus { outline: none; }
+.range::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--mpb-navy) 0 var(--fill, 0%), var(--mpb-track) var(--fill, 0%) 100%); }
+.range::-moz-range-track { height: 6px; border-radius: 3px; background: var(--mpb-track); }
+.range::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--mpb-navy); }
+.range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 28px; height: 28px; margin-top: -11px; border-radius: 50%; background: var(--mpb-white); border: 3px solid var(--mpb-navy); box-shadow: 0 2px 6px rgba(25,49,83,.25); transition: transform .15s ease, border-color .15s ease; }
+.range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--mpb-white); border: 3px solid var(--mpb-navy); box-shadow: 0 2px 6px rgba(25,49,83,.25); }
+.range:hover::-webkit-slider-thumb, .range:active::-webkit-slider-thumb { transform: scale(1.08); border-color: var(--mpb-teal-ink); }
+.range:focus-visible::-webkit-slider-thumb { box-shadow: var(--mpb-focus); }
+.range:focus-visible::-moz-range-thumb { box-shadow: var(--mpb-focus); }
+.stream .current { font-size: 15px; color: var(--mpb-navy); font-weight: 500; }
+.total { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 16px; border-top: 2px solid var(--mpb-navy); }
+.total .eyebrow { font-size: 13px; }
+.total .figure { font-size: 22px; font-weight: 500; color: var(--mpb-navy); }
+
+/* Result */
+.result .intro { margin: 8px 0 4px; font-size: 17px; }
+.result .range-figure { margin: 0 0 16px; font-size: clamp(28px, 3vw, 38px); line-height: 1.1; font-weight: 500; color: var(--mpb-navy); letter-spacing: -.01em; }
+.graphic { position: relative; height: 54px; margin: 10px 0 6px; }
+.graphic .track { position: absolute; left: 0; right: 0; top: 24px; height: 10px; background: #ECEFF3; border-radius: 5px; }
+.graphic .seg { position: absolute; top: 24px; height: 10px; border-radius: 5px; background: linear-gradient(to right, var(--mpb-teal), var(--mpb-teal-ink)); transition: left var(--mpb-duration) var(--mpb-ease), width var(--mpb-duration) var(--mpb-ease); }
+.graphic .mid { position: absolute; top: 17px; width: 24px; transform: translateX(-50%); transition: left var(--mpb-duration) var(--mpb-ease); }
+.graphic .mid i { display: block; width: 4px; height: 24px; background: var(--mpb-navy); border-radius: 2px; margin: 0 auto; }
+.graphic .lbl { position: absolute; top: 40px; transform: translateX(-50%); font-size: 12px; line-height: 1.3; color: var(--mpb-text-muted); text-align: center; white-space: nowrap; transition: left var(--mpb-duration) var(--mpb-ease); }
+.graphic .lbl.c { top: -4px; }
+.graphic .lbl strong { color: var(--mpb-navy); }
+.bands { margin-top: 44px; }
+.bands .head { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--mpb-text-muted); margin-bottom: 8px; }
+.bands .head b { color: var(--mpb-navy); font-weight: 500; text-transform: none; letter-spacing: 0; }
+.band-track { position: relative; height: 26px; }
+.band-track .segs { position: absolute; inset: 8px 0 auto 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; height: 10px; }
+.band-track .segs span { height: 10px; border-radius: 3px; transition: background var(--mpb-duration) ease; }
+.band-track .marker { position: absolute; top: 4px; transform: translateX(-50%); transition: left var(--mpb-duration) var(--mpb-ease); }
+.band-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--mpb-text-muted); margin-top: 6px; }
+.note { margin: 20px 0 0; font-size: 13px; color: var(--mpb-text-muted); }
+
+/* Conversion */
+.convert { margin-top: 24px; padding-top: 20px; border-top: 1px solid #ECEFF3; }
+.convert h3 { font-size: 20px; font-weight: 500; color: var(--mpb-navy); margin-bottom: 8px; }
+.convert p { margin: 0 0 16px; font-size: 15px; }
+.convert .small { margin: 12px 0 0; font-size: 12px; color: var(--mpb-text-muted); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 28px; background: var(--mpb-navy); color: var(--mpb-white); border: 2px solid var(--mpb-navy); border-radius: var(--mpb-radius-button); font: 500 15px/1 var(--mpb-font-body); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer; transition: background .25s ease, color .25s ease, border-color .25s ease; }
+.btn:hover { background: var(--mpb-teal); border-color: var(--mpb-teal); color: var(--mpb-navy); }
+.btn:focus-visible { outline: 3px solid var(--mpb-teal); outline-offset: 3px; }
+.btn.block { width: 100%; }
+.btn.ghost { background: transparent; color: var(--mpb-navy); min-height: 44px; padding: 0 20px; font-size: 13px; }
+.btn.ghost:hover { background: var(--mpb-navy); color: var(--mpb-white); border-color: var(--mpb-navy); }
+
+/* Steps */
+.steps { margin-top: 48px; }
+.steps h2 { font-size: 20px; font-weight: 500; color: var(--mpb-navy); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 18px; }
+.steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 960px) { .steps ol { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .steps ol { grid-template-columns: 1fr; } }
+.steps li { background: var(--mpb-surface); border-radius: 0 0 18px 0; padding: 20px; border-top: 4px solid var(--mpb-teal); }
+.steps .n { font-family: var(--mpb-font-script); font-size: 30px; line-height: 1; color: var(--mpb-navy); margin-bottom: 10px; }
+.steps b { display: block; font-size: 15px; font-weight: 500; color: var(--mpb-navy); margin-bottom: 6px; }
+.steps span { font-size: 13px; color: var(--mpb-text-muted); }
+
+/* Footer */
+.site-footer { background: var(--mpb-navy); color: #C9D3DE; }
+.site-footer .wrap { padding-top: 28px; padding-bottom: 28px; display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; font-size: 13px; }
+.site-footer .brand { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.site-footer img { height: 40px; width: auto; }
+.site-footer a { color: var(--mpb-teal); }
+.proto { background: #FFF8E1; color: #5A4300; font-size: 13px; text-align: center; padding: 8px 16px; }
+</style>
+</head>
+<body>
+
+<div class="proto" role="note">Prototype for internal review. Multiples, weights and band edges are placeholders, not MPB acquisition policy. Nothing you enter is stored or sent.</div>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="https://www.mypropertybox.co.uk/" aria-label="My Property Box home"><img src="assets/mpb-logo-navy-teal.png" alt="My Property Box" width="180" height="112"></a>
+    <div class="header-right">
+      <span class="confidential">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2F7A63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="1"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+        Confidential · No obligation
+      </span>
+      <a href="#detailed" class="btn ghost">Talk to our acquisitions team</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-copy">
+      <p class="script">Thinking of selling your agency?</p>
+      <h1>What is your lettings or estate agency worth?</h1>
+      <p class="lead">Move the sliders for an instant, confidential indication based on your revenue and business size. No contact details needed, no commitment.</p>
+    </div>
+    <div class="hero-points">
+      <div><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91D1B9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg><span>Instant result as you move each slider</span></div>
+      <div><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91D1B9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg><span>Nothing is stored until you choose to submit</span></div>
+      <div><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91D1B9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg><span>Larger, more recurring businesses attract higher multiples</span></div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap calc">
+  <div class="columns">
+    <section class="card sliders" aria-labelledby="revenue-heading">
+      <div class="section-head">
+        <h2 id="revenue-heading">Your annual revenue</h2>
+        <span>Last full financial year, excluding VAT</span>
+      </div>
+      <p>Drag a slider or type an exact figure. You can enter a figure above the slider's limit and the scale will extend.</p>
+      <div id="streams"></div>
+      <div class="total">
+        <span class="eyebrow">Total annual revenue</span>
+        <span class="figure" id="total">£0</span>
+      </div>
+    </section>
+
+    <aside class="card result" aria-live="polite" aria-atomic="true">
+      <p class="eyebrow">Indicative valuation</p>
+      <p class="intro">Your indicative business valuation range is</p>
+      <p class="range-figure figure" id="rangeText">£0–£0</p>
+
+      <div class="graphic" aria-hidden="true">
+        <div class="track"></div>
+        <div class="seg" id="seg"></div>
+        <div class="mid" id="mid"><i></i></div>
+        <div class="lbl" id="lblLow">Low<br><strong class="figure" id="lowText">£0</strong></div>
+        <div class="lbl c" id="lblMid">Central<br><strong class="figure" id="midText">£0</strong></div>
+        <div class="lbl" id="lblHigh">High<br><strong class="figure" id="highText">£0</strong></div>
+      </div>
+      <p class="visually-hidden">Low <span id="srLow"></span>, central estimate <span id="srMid"></span>, high <span id="srHigh"></span>.</p>
+
+      <div class="bands">
+        <div class="head"><span>Business-size band</span><b id="bandName"></b></div>
+        <div class="band-track" aria-hidden="true">
+          <div class="segs" id="bandSegs"></div>
+          <div class="marker" id="bandMarker"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 0 18 9 9 18 0 9z" fill="#91D1B9" stroke="#193153" stroke-width="2"></path></svg></div>
+        </div>
+        <div class="band-scale"><span>£0</span><span>£250k</span><span>£750k</span><span>£1.5m</span><span>£3m</span><span>£5m+</span></div>
+      </div>
+
+      <p class="note">Based on revenue and business size only. Multiples rise smoothly with total revenue; recurring management income is weighted most heavily.</p>
+
+      <div class="convert" id="detailed">
+        <h3>Want a more accurate valuation?</h3>
+        <p>This first result uses revenue and business size alone. Tell us about profitability, recurring income, portfolio quality and business risk and we will email you a more in-depth valuation.</p>
+        <a href="#questionnaire" class="btn block">Get my detailed valuation
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </a>
+        <p class="small">Takes about four minutes. Your report is sent by email; marketing consent is separate and optional. (Questionnaire not included in this prototype.)</p>
+      </div>
+    </aside>
+  </div>
+
+  <section class="steps" aria-labelledby="steps-heading">
+    <h2 id="steps-heading">How the detailed valuation works</h2>
+    <ol>
+      <li><div class="n">1</div><b>Complete the questionnaire</b><span>Profit, recurring income, portfolio quality and business risk.</span></li>
+      <li><div class="n">2</div><b>Enter your contact details</b><span>Name, email and the agency name. Nothing more.</span></li>
+      <li><div class="n">3</div><b>Agree to receive the report</b><span>One tick so we can email it. Marketing consent is separate and optional.</span></li>
+      <li><div class="n">4</div><b>Submit</b><span>Your figures are only stored once you submit.</span></li>
+      <li><div class="n">5</div><b>Receive your valuation by email</b><span>A more in-depth valuation from our acquisitions team.</span></li>
+    </ol>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="brand">
+      <img src="assets/mpb-logo-white.png" alt="My Property Box" width="180" height="112">
+      <span>Alton House, 27–31 Grange Road, Darlington, DL1 5NA · 0333 358 3676</span>
+    </div>
+    <div>Indicative only. Not a formal valuation or an offer. <a href="#privacy">Privacy notice</a></div>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // All model parameters live in config.js (window.MPB_VALUATION_CONFIG).
+  var CONFIG = window.MPB_VALUATION_CONFIG;
+
+  var fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+  function short(n) {
+    if (n >= 1000000) return '£' + (Math.round(n / 100000) / 10).toString().replace(/\.0$/, '') + 'm';
+    if (n >= 1000) return '£' + Math.round(n / 1000) + 'k';
+    return '£' + n;
+  }
+  function roundK(n) { return Math.round(n / 1000) * 1000; }
+  function multiple(total, key) {
+    var a = CONFIG.anchors;
+    if (total <= a[0].at) return a[0][key];
+    if (total >= a[a.length - 1].at) return a[a.length - 1][key];
+    for (var i = 0; i < a.length - 1; i++) {
+      if (total >= a[i].at && total <= a[i + 1].at) {
+        var t = (total - a[i].at) / (a[i + 1].at - a[i].at);
+        return a[i][key] + (a[i + 1][key] - a[i][key]) * t;
+      }
+    }
+    return a[a.length - 1][key];
+  }
+
+  var values = {};
+  var els = {};
+
+  // ---------- Build the slider rows ----------
+  var host = document.getElementById('streams');
+  CONFIG.streams.forEach(function (s) {
+    values[s.id] = s.initial;
+    var row = document.createElement('div');
+    row.className = 'stream';
+    row.innerHTML =
+      '<div class="stream-top">' +
+        '<div><label for="' + s.id + '">' + s.label + '</label><span class="hint" id="' + s.id + '-hint">' + s.hint + '</span></div>' +
+        '<div class="num-wrap"><span class="pound" aria-hidden="true">£</span>' +
+          '<input class="num" type="number" inputmode="numeric" min="0" max="' + CONFIG.hardCap + '" step="' + s.step + '" id="' + s.id + '-num" aria-label="' + s.label + ', exact figure in pounds" aria-describedby="' + s.id + '-hint"></div>' +
+      '</div>' +
+      '<div class="range-row"><span class="end">£0</span>' +
+        '<input class="range" type="range" id="' + s.id + '" min="0" step="' + s.step + '" aria-describedby="' + s.id + '-hint">' +
+        '<span class="end max" id="' + s.id + '-max"></span></div>' +
+      '<div class="current figure" id="' + s.id + '-cur"></div>';
+    host.appendChild(row);
+    els[s.id] = { range: row.querySelector('#' + s.id), num: row.querySelector('#' + s.id + '-num'), max: row.querySelector('#' + s.id + '-max'), cur: row.querySelector('#' + s.id + '-cur') };
+
+    els[s.id].range.addEventListener('input', function (e) { setValue(s, Number(e.target.value), true); });
+    els[s.id].range.addEventListener('keydown', function (e) {
+      // Page Up / Page Down move ten steps
+      if (e.key === 'PageUp' || e.key === 'PageDown') {
+        e.preventDefault();
+        var d = s.step * 10 * (e.key === 'PageUp' ? 1 : -1);
+        setValue(s, Math.max(0, Math.min(CONFIG.hardCap, values[s.id] + d)), true);
+      }
+    });
+    els[s.id].num.addEventListener('input', function (e) {
+      var n = parseInt(e.target.value, 10);
+      if (!isNaN(n) && n >= 0) setValue(s, Math.min(n, CONFIG.hardCap), false);
+    });
+    els[s.id].num.addEventListener('blur', function () { els[s.id].num.value = values[s.id]; });
+  });
+
+  var bandSegs = document.getElementById('bandSegs');
+  CONFIG.bands.forEach(function (b) { var sp = document.createElement('span'); sp.title = b.name; bandSegs.appendChild(sp); });
+
+  function setValue(s, n, fromSlider) {
+    values[s.id] = n;
+    var el = els[s.id];
+    var sliderMax = n > s.max ? Math.ceil(n / (s.max / 4)) * (s.max / 4) : s.max;
+    el.range.max = sliderMax;
+    el.range.value = n;
+    el.range.style.setProperty('--fill', ((n / sliderMax) * 100).toFixed(2) + '%');
+    el.range.setAttribute('aria-valuetext', fmt.format(n));
+    el.max.textContent = short(sliderMax) + (n > s.max ? ' ↗' : '');
+    el.cur.textContent = fmt.format(n);
+    if (fromSlider || document.activeElement !== el.num) el.num.value = n;
+    render();
+  }
+
+  function render() {
+    var total = 0, weighted = 0;
+    CONFIG.streams.forEach(function (s) { total += values[s.id]; weighted += values[s.id] * s.weight; });
+    var low = roundK(weighted * multiple(total, 'low'));
+    var mid = roundK(weighted * multiple(total, 'mid'));
+    var high = roundK(weighted * multiple(total, 'high'));
+
+    var bandIndex = -1;
+    for (var i = 0; i < CONFIG.bands.length; i++) { if (total < CONFIG.bands[i].top) { bandIndex = i; break; } }
+    if (bandIndex < 0) bandIndex = CONFIG.bands.length - 1;
+    var lastBand = CONFIG.bands.length - 1;
+    var bandTop = bandIndex === lastBand ? Math.max(CONFIG.bands[lastBand].top, total * 1.2) : CONFIG.bands[bandIndex].top;
+    var scale = Math.max(bandTop * 2.0, 100000);
+    function pct(v) { return Math.min(100, (v / scale) * 100); }
+    var lowP = pct(low), midP = pct(mid), highP = pct(high);
+
+    document.getElementById('total').textContent = fmt.format(total);
+    document.getElementById('rangeText').textContent = total > 0 ? fmt.format(low) + '–' + fmt.format(high) : 'Move a slider to begin';
+    document.getElementById('lowText').textContent = fmt.format(low);
+    document.getElementById('midText').textContent = fmt.format(mid);
+    document.getElementById('highText').textContent = fmt.format(high);
+    document.getElementById('srLow').textContent = fmt.format(low);
+    document.getElementById('srMid').textContent = fmt.format(mid);
+    document.getElementById('srHigh').textContent = fmt.format(high);
+
+    var seg = document.getElementById('seg');
+    seg.style.left = lowP.toFixed(2) + '%';
+    seg.style.width = Math.max(0, highP - lowP).toFixed(2) + '%';
+    document.getElementById('mid').style.left = midP.toFixed(2) + '%';
+    document.getElementById('lblLow').style.left = Math.max(6, lowP).toFixed(2) + '%';
+    document.getElementById('lblMid').style.left = midP.toFixed(2) + '%';
+    document.getElementById('lblHigh').style.left = Math.min(94, highP).toFixed(2) + '%';
+
+    document.getElementById('bandName').textContent = CONFIG.bands[bandIndex].name;
+    Array.prototype.forEach.call(bandSegs.children, function (sp, i) { sp.style.background = i === bandIndex ? '#193153' : CONFIG.bandColours[i]; });
+    var e = CONFIG.bandEdges, bandPos;
+    if (total >= 5000000) bandPos = 100; else bandPos = (bandIndex + (total - e[bandIndex]) / (e[bandIndex + 1] - e[bandIndex])) * 20;
+    document.getElementById('bandMarker').style.left = bandPos.toFixed(2) + '%';
+  }
+
+  CONFIG.streams.forEach(function (s) { setValue(s, s.initial, true); });
+})();
+</script>
+</body>
+</html>
